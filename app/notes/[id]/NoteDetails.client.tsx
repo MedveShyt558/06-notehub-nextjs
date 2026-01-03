@@ -18,20 +18,23 @@ export default function NoteDetailsClient() {
     queryKey: ["note", id],
     queryFn: () => fetchNoteById(id as string),
     enabled: Boolean(id),
+    refetchOnMount: false,
   });
 
   if (isLoading) return <p>Loading, please wait...</p>;
   if (isError || !note) return <p>Something went wrong.</p>;
 
   return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <h2>{note.title}</h2>
+    <main className={css.main}>
+      <div className={css.container}>
+        <div className={css.item}>
+          <div className={css.header}>
+            <h2>{note.title}</h2>
+          </div>
+          <p className={css.content}>{note.content}</p>
+          <p className={css.date}>{new Date(note.createdAt).toLocaleString()}</p>
         </div>
-        <p className={css.content}>{note.content}</p>
-        <p className={css.date}>{new Date(note.createdAt).toLocaleString()}</p>
       </div>
-    </div>
+    </main>
   );
 }

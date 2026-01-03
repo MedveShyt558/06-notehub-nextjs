@@ -43,17 +43,17 @@ export default function NotesClient() {
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
-    setPage(1); 
+    setPage(1);
   };
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
   return (
-    <main className={css.main}>
-      <div className={css.container}>
-        <header className={css.header}>
-          <h1 className={css.title}>Notes</h1>
+    <main>
+      <div className={css.app}>
+        <header className={css.toolbar}>
+          <h1>Notes</h1>
 
           <button className={css.button} onClick={openModal}>
             Create note +
@@ -62,8 +62,8 @@ export default function NotesClient() {
 
         <SearchBox value={search} onChange={handleSearchChange} />
 
-        {isFetching && <p className={css.info}>Loading...</p>}
-        {isError && <p className={css.info}>Something went wrong.</p>}
+        {isFetching && <p>Loading...</p>}
+        {isError && <p>Something went wrong.</p>}
 
         {notes.length > 0 && <NoteList notes={notes} />}
 

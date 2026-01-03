@@ -6,11 +6,11 @@ import type { Note } from "@/types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteNote } from "@/lib/api";
 
-type Props = {
+interface NoteListProps {
   notes: Note[];
-};
+}
 
-export default function NoteList({ notes }: Props) {
+export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -23,21 +23,21 @@ export default function NoteList({ notes }: Props) {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
-        <li key={note.id} className={css.item}>
-          <div className={css.header}>
+        <li key={note.id} className={css.listItem}>
+          <div className={css.footer}>
             <h3 className={css.title}>{note.title}</h3>
             <p className={css.tag}>{note.tag}</p>
           </div>
 
           <p className={css.content}>{note.content}</p>
 
-          <div className={css.actions}>
+          <div className={css.footer}>
             <Link className={css.link} href={`/notes/${note.id}`}>
               View details
             </Link>
 
             <button
-              className={css.delete}
+              className={css.button}
               disabled={isPending}
               onClick={() => mutate(note.id)}
             >

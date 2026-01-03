@@ -1,94 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import css from "./NoteForm.module.css";
 import type { CreateNoteRequest, NoteTag } from "@/types/note";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote } from "@/lib/api";
 
-type Props = {
+interface NoteFormProps {
   onCancel: () => void;
-};
+}
 
 const TAGS: NoteTag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
-export default function NoteForm({ onCancel }: Props) {
+const validationSchema = Yup.object({
+  title: Yup.string().trim().required("Title is required"),
+  content: Yup.string().trim(),
+  tag: Yup.mixed<NoteTag>().oneOf(TAGS).required("Tag is required"),
+});
+
+export default function NoteForm({ onCancel }: NoteFormProps) {
   const queryClient = useQueryClient();
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tag, setTag] = useState<NoteTag>("Todo");
-
-  const { mutate, isPending, error } = useMutation({
+  const { mutateAsync, isPending } = useMutation({
     mutationFn: (payload: CreateNoteRequest) => createNote(payload),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["notes"] });
-      onCancel(); // закриваємо модалку
+      onCancel();
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Мінімальна валідація (щоб не створювати порожні)
-    if (!title.trim()) return;
-
-    mutate({
-      title: title.trim(),
-      content: content.trim(),
-      tag,
-    });
+  const initialValues: CreateNoteRequest = {
+    title: "",
+    content: "",
+    tag: "Todo",
   };
 
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
-      <h2 className={css.title}>Create note</h2>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={async (values, actions) => {
+        await mutateAsync({
+          title: values.title.trim(),
+          content: values.content.trim(),
+          tag: values.tag,
+        });
+        actions.resetForm();
+      }}
+    >
+      <Form className={css.form}>
+        <h2>Create note</h2>
 
-      <label className={css.label}>
-        Title
-        <input
-          className={css.input}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Note title"
-        />
-      </label>
+        <label className={css.formGroup}>
+          Title
+          <Field className={css.input} name="title" />
+          <ErrorMessage name="title" component="p" className={css.error} />
+        </label>
 
-      <label className={css.label}>
-        Content
-        <textarea
-          className={css.textarea}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Write something..."
-        />
-      </label>
+        <label className={css.formGroup}>
+          Content
+          <Field as="textarea" name="content" className={css.textarea} />
+          <ErrorMessage name="content" component="p" className={css.error} />
+        </label>
 
-      <label className={css.label}>
-        Tag
-        <select
-          className={css.select}
-          value={tag}
-          onChange={(e) => setTag(e.target.value as NoteTag)}
-        >
-          {TAGS.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </label>
+        <label className={css.formGroup}>
+          Tag
+          <Field as="select" name="tag" className={css.select}>
+            {TAGS.map((tag) => (
+              <option key={tag} value={tag}>
+                {tag}
+              </option>
+            ))}
+          </Field>
+          <ErrorMessage name="tag" component="p" className={css.error} />
+        </label>
 
-      {error && <p className={css.error}>Something went wrong.</p>}
-
-      <div className={css.actions}>
-        <button className={css.cancel} type="button" onClick={onCancel} disabled={isPending}>
-          Cancel
-        </button>
-        <button className={css.submit} type="submit" disabled={isPending}>
-          Create
-        </button>
-      </div>
-    </form>
+        <div className={css.actions}>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={css.cancelButton}
+            disabled={isPending}
+          >
+            Cancel
+          </button>
+          <button type="submit" className={css.submitButton} disabled={isPending}>
+            Create
+          </button>
+        </div>
+      </Form>
+    </Formik>
   );
 }

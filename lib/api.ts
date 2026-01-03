@@ -1,6 +1,12 @@
 import axios from "axios";
 import type { AxiosResponse } from "axios";
-import type { CreateNoteRequest, FetchNotesResponse, Note } from "@/types/note";
+import type { CreateNoteRequest, Note } from "@/types/note";
+
+
+export interface FetchNotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_NOTEHUB_API;
 
