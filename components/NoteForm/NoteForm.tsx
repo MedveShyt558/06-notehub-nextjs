@@ -4,7 +4,7 @@ import { useState } from "react";
 import css from "./NoteForm.module.css";
 import type { CreateNoteRequest, NoteTag } from "@/types/note";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lib/api/api";
+import { createNote } from "@/lib/api";
 
 type Props = {
   onCancel: () => void;
