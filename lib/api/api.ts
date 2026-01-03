@@ -1,6 +1,25 @@
+import axios from "axios";
 import type { AxiosResponse } from "axios";
-import { api } from "./axios";
 import type { CreateNoteRequest, FetchNotesResponse, Note } from "@/types/note";
+
+const BASE_URL = process.env.NEXT_PUBLIC_NOTEHUB_API;
+
+if (!BASE_URL) {
+  throw new Error("NEXT_PUBLIC_NOTEHUB_API is not defined");
+}
+
+const api = axios.create({
+  baseURL: BASE_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+  if (token) {
+    config.headers = config.headers ?? {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export const fetchNotes = async (params: {
   page: number;
@@ -14,7 +33,11 @@ export const fetchNotes = async (params: {
       search: params.search || undefined,
     },
   });
+  return res.data;
+};
 
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const res: AxiosResponse<Note> = await api.get(`/notes/${id}`);
   return res.data;
 };
 
